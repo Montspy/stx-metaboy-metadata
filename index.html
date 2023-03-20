@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0Z1RGBLTWW"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-0Z1RGBLTWW');
+    </script>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>MetaBoy First Odyssey metadata and (unofficial) rarity</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+</head>
+
+<body>
+    <header class="row">
+        <div class="col-10">
+            <h1>MetaBoy First Odyssey metadata and <span class="smaller-text">unofficial</span> rarity</h1>
+        </div>
+        <div class="col-2">
+            <form action="" class="theme-picker">
+                <fieldset>
+                    <legend class="sr-only">Change to dark mode</legend>
+                    <label for="theme" class="sr-only">Dark</label>
+                    <input name="dark" type="checkbox" id="dark">
+                </fieldset>
+            </form>
+        </div>
+        <div class="col">
+            <p class="text-right">MetaBoy First Odyssey metadata scraped by <a href="http://twitter.com/@ItsMonty_">itsmonty.eth</a><span id="updated-at"></span></p>
+        </div>
+    </header>
+    <div class="container-fluid">
+        <main class="row">
+            <div class="col">
+                <h4>📚 Layers and variations</h4>
+                <div id="traits-table"></div>
+                <p id="traits-table-loading" class="bubble">Loading...</p>
+                <hr>
+                <br/>
+                <h4>🎲 Rarity</h4>
+                <p class="info bubble">Unofficial rarity ranking, unofficial cartridge to MetaBoy mapping</p>
+                <p class="info bubble">This rarity ranking is based on the sum of each NFT's trait rarity score. An individual trait's rarity score is (total_nft_count / nft_with_trait_count)</p>
+                <div id="rarity-table"></div>
+                <p id="rarity-table-loading" class="bubble">Loading...</p>
+            </div>
+        </main>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/js/bootstrap.bundle.min.js"></script>
+    <script src="js/jquery.csv.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+    <script src="js/csv_to_html_table.js"></script>
+    <script src="js/theme.js"></script>
+    <script>
+        function format_link(urls) {
+            mp_urls = [{name: "STX Cartridge", url:"gamma.io/collections/metaboy-cartridge-first-odyssey"}, {name: "STX MetaBoy", url: "gamma.io/collections/metaboy"}];
+
+            if (urls) {
+                urls = urls.split(";");
+                let anchors = [];
+                for (const url of urls) {
+                    let mp = mp_urls.find((x) => { return url.includes(x.url) })  // Find the MP name
+                    if (mp === undefined)
+                        mp = {name: "Link"};
+                    anchors.push("<a href='" + url + "' target='_blank'>" + mp.name + "</a>");
+                }
+                return anchors.join("\n<br />\n");
+            }
+            else return "";
+        }
+
+        function format_image(img_url) {
+            if (img_url) {
+                id_index = img_url.indexOf("?__id=");
+                img_src = img_url.substring(0, id_index);
+                return "<div class='nft-img'><a href='" + img_src + "' target='_blank'><img src='" + img_src + "' alt='NFT image' loading='lazy' /></a></div>";
+            }
+            else return "";
+        }
+
+        function format_id(id) {
+            if (id) {
+                return "#" + id;
+            }
+            else return "";
+        }
+
+        CsvToHtmlTable.init({
+            csv_path: "https://metaboy-bucket.s3.us-east-2.amazonaws.com/metadata_stats.csv",
+            //csv_path: "./metadata_stats.csv",
+            element: "traits-table",
+            allow_download: false,
+            csv_options: {
+                separator: ",",
+                delimiter: '"',
+                dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>" +
+                "<'row'<'col-sm-12 ov-x-auto'tr>>"
+            },
+            datatables_options: {
+                paging: true
+            },
+            load_callback: () => {
+                document.getElementById("traits-table-loading").remove();
+            }
+        });
+
+        CsvToHtmlTable.init({
+            csv_path: "https://metaboy-bucket.s3.us-east-2.amazonaws.com/Ranks.csv",
+            //csv_path: "./Ranks.csv",
+            element: "rarity-table",
+            allow_download: false,
+            csv_options: {
+                separator: ",",
+                delimiter: '"'
+            },
+            datatables_options: {
+                paging: true,
+                pageLength: 10,
+                order: [],
+                dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                scrollX: true
+            },
+            custom_formatting: [
+                [0, format_image],
+                [1, format_id],
+                [5, format_link]
+            ],
+            load_callback: () => {
+                document.getElementById("rarity-table-loading").remove();
+            }
+        });
+
+        var getText = function(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.responseType = 'text';
+            xhr.onload = function() {
+              var status = xhr.status;
+              if (status === 200) {
+                callback(null, xhr.response);
+              } else {
+                callback(status, xhr.response);
+              }
+            };
+            xhr.send();
+        };
+
+        window.addEventListener("load", () => {
+            getText("https://metaboy-bucket.s3.us-east-2.amazonaws.com/updatedAt.txt", (err, data) => {
+                if (err === null) {
+                    document.getElementById("updated-at").innerText = " - Updated at " + data + " UTC";
+                }
+            })
+        })
+    </script>
+</body>
+
+</html>
