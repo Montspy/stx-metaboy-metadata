@@ -160,6 +160,13 @@ img {
   overflow-x: auto;
 }
 
+*[data-before-content]::before {
+  content: attr(data-before-content);
+}
+*[data-before-color]::before {
+  color: attr(data-before-color);
+}
+
 
 .theme-picker {
   line-height: 1;

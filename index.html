@@ -50,7 +50,7 @@
                 <br/>
                 <h4>🎲 Rarity</h4>
                 <p class="warning bubble">Unofficial rarity ranking, unofficial cartridge to MetaBoy mapping</p>
-                <p class="info bubble">Links that 404 will become active once the cartridge is minted</p>
+                <p class="info bubble">"✓" means minted. "🚫" means not yet minted.</p>
                 <p class="info bubble">This rarity ranking is based on the sum of each NFT's trait rarity score. An individual trait's rarity score is (total_nft_count / nft_with_trait_count)</p>
                 <div id="rarity-table"></div>
                 <p id="rarity-table-loading" class="bubble">Loading...</p>
@@ -65,8 +65,45 @@
     <script src="js/csv_to_html_table.js"></script>
     <script src="js/theme.js"></script>
     <script>
+        const contractNames = {"metaboy": "SP2W12MNM4SPV37VZHN4GCDG35G9ACG3FDKK7WF04.MetaBoy::MetaBoy", "metaboy-cartridge-first-odyssey": "SP30TV0HVAAXY0H4K3JQ0YXC465X6G4GQCE018RSH.metaboy-cartridge-first-odyssey::metaboy-cartridge-first-odyssey"}
+
+        function check_for_nft(full_id) {
+            return fetch("https://api.gamma.io/nft-data-service/v1/nfts?id=" + full_id)
+            .then(r => r.json())
+            .then(data => data.nfts.length > 0 );
+        }
+
+        let options = {
+            rootMargin: "0px",
+            threshold: 0.0,
+        };
+
+        let callback = (entries, observer) => {
+            entries.forEach((entry) => {
+                if(entry.isIntersecting) {
+                    observer.unobserve(entry.target);
+                    entry.target.classList.remove("mint-check");
+                    //console.log("Observed " + entry.target.href);
+                    [id, contract_short_name, ...rest] = entry.target.href.split("/").reverse();
+                    full_id = contractNames[contract_short_name] + ":" + id;
+
+                    check_for_nft(full_id).then(is_minted => {
+                        if(is_minted) {
+                            entry.target.setAttribute("data-before-content", "✓ ");
+                            entry.target.setAttribute("data-before-color", "#22b317");
+                            entry.target.classList.add("yepp");
+                        }
+                        else {
+                            entry.target.setAttribute("data-before-content", "🚫 ");
+                            entry.target.classList.add("nope");
+                        }
+                    });
+                }
+            });
+        };
+
         function format_link(urls) {
-            mp_urls = [{name: "STX Cartridge", url:"gamma.io/collections/metaboy-cartridge-first-odyssey"}, {name: "STX MetaBoy", url: "gamma.io/collections/metaboy"}];
+            mp_urls = [{name: "Cartridge", url:"gamma.io/collections/metaboy-cartridge-first-odyssey"}, {name: "MetaBoy", url: "gamma.io/collections/metaboy"}];
 
             if (urls) {
                 urls = urls.split(";");
@@ -75,7 +112,7 @@
                     let mp = mp_urls.find((x) => { return url.includes(x.url) })  // Find the MP name
                     if (mp === undefined)
                         mp = {name: "Link"};
-                    anchors.push("<a href='" + url + "' target='_blank'>" + mp.name + "</a>");
+                    anchors.push("<a href='" + url + "' target='_blank' class='mint-check'>" + mp.name + "</a>");
                 }
                 return anchors.join("\n<br />\n");
             }
@@ -144,6 +181,16 @@
             ],
             load_callback: () => {
                 document.getElementById("rarity-table-loading").remove();
+
+                function add_mint_check_observer() {
+                    console.log("refreshing mint-checks")
+                    let observer = new IntersectionObserver(callback, options);
+                    const targets = document.querySelectorAll(".mint-check");
+                    targets.forEach(target => observer.observe(target))
+                }
+                add_mint_check_observer();
+                setInterval(add_mint_check_observer, 1000);
+
             }
         });
 
