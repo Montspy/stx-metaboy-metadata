@@ -50,7 +50,7 @@
                 <br/>
                 <h4>🎲 Rarity</h4>
                 <p class="warning bubble">Unofficial rarity ranking, unofficial cartridge to MetaBoy mapping</p>
-                <p class="info bubble">"✓" means minted. "🚫" means not yet minted.</p>
+                <p class="info bubble">"✓" means minted. "🛇" means not yet minted.</p>
                 <p class="info bubble">This rarity ranking is based on the sum of each NFT's trait rarity score. An individual trait's rarity score is (total_nft_count / nft_with_trait_count)</p>
                 <div id="rarity-table"></div>
                 <p id="rarity-table-loading" class="bubble">Loading...</p>
@@ -89,12 +89,13 @@
 
                     check_for_nft(full_id).then(is_minted => {
                         if(is_minted) {
-                            entry.target.setAttribute("data-before-content", "✓ ");
-                            entry.target.setAttribute("data-before-color", "#22b317");
+                            entry.target.setAttribute("data-after-content", "✓");
+                            entry.target.setAttribute("data-after-color", "green");
                             entry.target.classList.add("yepp");
                         }
                         else {
-                            entry.target.setAttribute("data-before-content", "🚫 ");
+                            entry.target.setAttribute("data-after-content", "🛇");
+                            entry.target.setAttribute("data-after-color", "red");
                             entry.target.classList.add("nope");
                         }
                     });
@@ -112,7 +113,7 @@
                     let mp = mp_urls.find((x) => { return url.includes(x.url) })  // Find the MP name
                     if (mp === undefined)
                         mp = {name: "Link"};
-                    anchors.push("<a href='" + url + "' target='_blank' class='mint-check'>" + mp.name + "</a>");
+                    anchors.push("<a href='" + url + "' target='_blank' class='mint-check' data-after-content='↻↻' data-after-color='grey'>" + mp.name + "</a>");
                 }
                 return anchors.join("\n<br />\n");
             }

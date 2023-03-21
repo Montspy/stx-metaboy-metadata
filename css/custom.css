@@ -160,12 +160,13 @@ img {
   overflow-x: auto;
 }
 
-*[data-before-content]::before {
-  content: attr(data-before-content);
+*[data-after-content]::after {
+  content: attr(data-after-content);
+  margin-left: 0.5em;
 }
-*[data-before-color]::before {
-  color: attr(data-before-color);
-}
+*[data-after-color=red]::after    { color: red; }
+*[data-after-color=green]::after  { color: green; }
+*[data-after-color=grey]::after   { color: grey; }
 
 
 .theme-picker {
